@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KantinaTab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .card { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-5; }
+    .btn { @apply px-4 py-2 rounded-lg font-medium transition; }
+    .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700; }
+    .btn-success { @apply bg-emerald-600 text-white hover:bg-emerald-700; }
+    .btn-danger { @apply bg-red-600 text-white hover:bg-red-700; }
+    .btn-secondary { @apply bg-gray-100 text-gray-700 hover:bg-gray-200; }
+    .input { @apply border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500; }
+    .table th { @apply text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3; }
+    .table td { @apply px-4 py-3 border-t border-gray-100; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">K</div>
+        <h1 class="text-xl font-bold text-gray-800">KantinaTab</h1>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="setMode('employee')" id="btn-employee" class="btn btn-secondary text-sm">Employee</button>
+        <button onclick="setMode('admin')" id="btn-admin" class="btn btn-primary text-sm">Admin</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <!-- ==================== EMPLOYEE VIEW ==================== -->
+    <div id="employee-view" class="hidden">
+      <div class="max-w-2xl mx-auto">
+        <div class="card mb-6">
+          <h2 class="text-lg font-semibold mb-4">Employee Balance Lookup</h2>
+          <div class="flex gap-3">
+            <input type="text" id="emp-lookup-id" class="input" placeholder="Enter Employee ID (e.g. EMP001)" />
+            <button onclick="lookupEmployee()" class="btn btn-primary">Lookup</button>
+          </div>
+        </div>
+
+        <div id="employee-result" class="hidden">
+          <div class="card mb-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-xl font-bold" id="emp-name"></h3>
+                <p class="text-gray-500 text-sm" id="emp-company"></p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-500">Current Balance</p>
+                <p class="text-2xl font-bold text-red-600" id="emp-balance"></p>
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-4">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs text-gray-500">Credit Limit</p>
+                <p class="font-semibold" id="emp-limit"></p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs text-gray-500">Available Credit</p>
+                <p class="font-semibold text-emerald-600" id="emp-available"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="font-semibold mb-3">Recent Transactions</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full table text-sm">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th class="text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="emp-transactions"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ADMIN VIEW ==================== -->
+    <div id="admin-view" class="hidden">
+      <!-- Admin Navigation -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button onclick="showAdminTab('dashboard')" class="admin-tab btn btn-primary text-sm" data-tab="dashboard">Dashboard</button>
+        <button onclick="showAdminTab('inventory')" class="admin-tab btn btn-secondary text-sm" data-tab="inventory">Inventory</button>
+        <button onclick="showAdminTab('sales')" class="admin-tab btn btn-secondary text-sm" data-tab="sales">Sales</button>
+        <button onclick="showAdminTab('credit')" class="admin-tab btn btn-secondary text-sm" data-tab="credit">Credit</button>
+        <button onclick="showAdminTab('analytics')" class="admin-tab btn btn-secondary text-sm" data-tab="analytics">Analytics</button>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="tab-dashboard" class="admin-content">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="card">
+            <p class="text-sm text-gray-500">Today's Revenue</p>
+            <p class="text-2xl font-bold text-emerald-600" id="stat-today-revenue">₱0</p>
+          </div>
+          <div class="card">
+            <p class="text-sm text-gray-500">Outstanding Credit</p>
+            <p class="text-2xl font-bold text-red-600" id="stat-outstanding">₱0</p>
+          </div>
+          <div class="card">
+            <p class="text-sm text-gray-500">Low Stock Items</p>
+            <p class="text-2xl font-bold text-amber-600" id="stat-low-stock">0</p>
+          </div>
+          <div class="card">
+            <p class="text-sm text-gray-500">Total Employees</p>
+            <p class="text-2xl font-bold" id="stat-employees">0</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="font-semibold mb-3">Low Stock Alerts</h3>
+          <div id="low-stock-list" class="space-y-2 text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Inventory -->
+      <div id="tab-inventory" class="admin-content hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold">Inventory Management</h2>
+          <button onclick="openProductModal()" class="btn btn-primary text-sm">+ Add Product</button>
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="w-full table text-sm">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Low Threshold</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sales -->
+      <div id="tab-sales" class="admin-content hidden">
+        <h2 class="text-lg font-semibold mb-4">Record Sale</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 card">
+            <h3 class="font-medium mb-3">Select Products</h3>
+            <div id="sales-product-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+          </div>
+          <div class="card">
+            <h3 class="font-medium mb-3">Cart</h3>
+            <div id="cart-items" class="space-y-2 mb-4 text-sm min-h-[100px]"></div>
+            <div class="border-t pt-3">
+              <div class="flex justify-between font-bold text-lg mb-4">
+                <span>Total</span>
+                <span id="cart-total">₱0.00</span>
+              </div>
+              <div class="mb-3">
+                <label class="text-sm text-gray-600">Payment Type</label>
+                <select id="payment-type" class="input mt-1" onchange="toggleEmployeeSelect()">
+                  <option value="cash">Cash</option>
+                  <option value="credit">Credit</option>
+                </select>
+              </div>
+              <div id="employee-select-wrap" class="mb-3 hidden">
+                <label class="text-sm text-gray-600">Employee</label>
+                <select id="sale-employee" class="input mt-1"></select>
+              </div>
+              <button onclick="completeSale()" class="btn btn-success w-full">Complete Sale</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credit Management -->
+      <div id="tab-credit" class="admin-content hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold">Credit Management</h2>
+          <div class="flex gap-2">
+            <button onclick="openEmployeeModal()" class="btn btn-primary text-sm">+ Add Employee</button>
+            <button onclick="generateStatements()" class="btn btn-secondary text-sm">Generate Statements</button>
+          </div>
+        </div>
+        <div class="card overflow-x-auto mb-6">
+          <table class="w-full table text-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Balance</th>
+                <th>Limit</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="credit-table"></tbody>
+          </table>
+        </div>
+        <div id="statements-area" class="hidden card">
+          <h3 class="font-semibold mb-3">Company Statements (Current Period)</h3>
+          <div id="statements-content"></div>
+        </div>
+      </div>
+
+      <!-- Analytics -->
+      <div id="tab-analytics" class="admin-content hidden">
+        <h2 class="text-lg font-semibold mb-4">Analytics</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card">
+            <h3 class="font-medium mb-3">Best Sellers</h3>
+            <canvas id="chart-bestsellers" height="220"></canvas>
+          </div>
+          <div class="card">
+            <h3 class="font-medium mb-3">Revenue Trend (Last 7 Days)</h3>
+            <canvas id="chart-revenue" height="220"></canvas>
+          </div>
+        </div>
+        <div class="card mt-6">
+          <h3 class="font-medium mb-3">Outstanding Credit by Company</h3>
+          <canvas id="chart-credit" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Product Modal -->
+  <div id="product-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-20">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+      <h3 class="text-lg font-semibold mb-4" id="product-modal-title">Add Product</h3>
+      <input type="hidden" id="product-id" />
+      <div class="space-y-3">
+        <div>
+          <label class="text-sm text-gray-600">Name</label>
+          <input type="text" id="product-name" class="input mt-1" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Price (₱)</label>
+          <input type="number" id="product-price" class="input mt-1" step="0.01" min="0" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Current Stock</label>
+          <input type="number" id="product-stock" class="input mt-1" min="0" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Low Stock Threshold</label>
+          <input type="number" id="product-threshold" class="input mt-1" min="0" value="10" />
+        </div>
+      </div>
+      <div class="flex gap-2 mt-6">
+        <button onclick="saveProduct()" class="btn btn-primary flex-1">Save</button>
+        <button onclick="closeProductModal()" class="btn btn-secondary flex-1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Modal -->
+  <div id="employee-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-20">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+      <h3 class="text-lg font-semibold mb-4">Add / Edit Employee</h3>
+      <input type="hidden" id="emp-edit-id" />
+      <div class="space-y-3">
+        <div>
+          <label class="text-sm text-gray-600">Employee ID</label>
+          <input type="text" id="emp-id" class="input mt-1" placeholder="EMP001" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Full Name</label>
+          <input type="text" id="emp-fullname" class="input mt-1" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Company</label>
+          <input type="text" id="emp-company-input" class="input mt-1" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Credit Limit (₱)</label>
+          <input type="number" id="emp-credit-limit" class="input mt-1" min="0" value="500" />
+        </div>
+      </div>
+      <div class="flex gap-2 mt-6">
+        <button onclick="saveEmployee()" class="btn btn-primary flex-1">Save</button>
+        <button onclick="closeEmployeeModal()" class="btn btn-secondary flex-1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Adjust Modal -->
+  <div id="stock-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-20">
+    <div class="bg-white rounded-xl p-6 w-full max-w-sm mx-4">
+      <h3 class="text-lg font-semibold mb-4">Adjust Stock</h3>
+      <p class="text-sm text-gray-600 mb-2" id="stock-product-name"></p>
+      <input type="hidden" id="stock-product-id" />
+      <div class="flex gap-2 mb-4">
+        <button onclick="adjustStock(-1)" class="btn btn-secondary flex-1">− Remove</button>
+        <button onclick="adjustStock(1)" class="btn btn-primary flex-1">+ Add</button>
+      </div>
+      <input type="number" id="stock-qty" class="input mb-4" value="1" min="1" />
+      <button onclick="closeStockModal()" class="btn btn-secondary w-full">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ==================== DATA ====================
+    let data = {
+      products: [],
+      employees: [],
+      sales: [],
+      cart: []
+    };
+
+    const defaultData = {
+      products: [
+        { id: 'P001', name: 'Chicken Adobo Meal', price: 85, stock: 25, threshold: 8 },
+        { id: 'P002', name: 'Pancit Canton', price: 45, stock: 40, threshold: 10 },
+        { id: 'P003', name: 'Bottled Water', price: 20, stock: 60, threshold: 15 },
+        { id: 'P004', name: 'Softdrink 330ml', price: 30, stock: 35, threshold: 12 },
+        { id: 'P005', name: 'Siopao', price: 35, stock: 18, threshold: 8 },
+        { id: 'P006', name: 'Banana Cue', price: 25, stock: 7, threshold: 10 },
+        { id: 'P007', name: 'Coffee', price: 40, stock: 50, threshold: 15 }
+      ],
+      employees: [
+        { id: 'EMP001', name: 'Juan Dela Cruz', company: 'Acme Corp', limit: 500, balance: 185,
+          transactions: [
+            { date: '2026-08-14', desc: 'Chicken Adobo Meal + Softdrink', amount: 115 },
+            { date: '2026-08-12', desc: 'Pancit Canton', amount: 45 },
+            { date: '2026-08-10', desc: 'Siopao + Coffee', amount: 75 }
+          ]},
+        { id: 'EMP002', name: 'Maria Santos', company: 'Acme Corp', limit: 400, balance: 90,
+          transactions: [
+            { date: '2026-08-15', desc: 'Banana Cue + Water', amount: 45 },
+            { date: '2026-08-13', desc: 'Chicken Adobo Meal', amount: 85 }
+          ]},
+        { id: 'EMP003', name: 'Pedro Reyes', company: 'Beta Inc', limit: 600, balance: 320,
+          transactions: [
+            { date: '2026-08-15', desc: '2x Chicken Adobo + Softdrink', amount: 200 },
+            { date: '2026-08-11', desc: 'Pancit + Coffee', amount: 85 }
+          ]},
+        { id: 'EMP004', name: 'Ana Lim', company: 'Beta Inc', limit: 350, balance: 0, transactions: [] }
+      ],
+      sales: [
+        { id: 'S001', date: '2026-08-15', items: [{name:'Chicken Adobo Meal', qty:3, price:85}], total: 255, type: 'cash' },
+        { id: 'S002', date: '2026-08-15', items: [{name:'Softdrink 330ml', qty:5, price:30}], total: 150, type: 'cash' },
+        { id: 'S003', date: '2026-08-14', items: [{name:'Pancit Canton', qty:4, price:45}], total: 180, type: 'cash' },
+        { id: 'S004', date: '2026-08-14', items: [{name:'Siopao', qty:6, price:35}], total: 210, type: 'cash' },
+        { id: 'S005', date: '2026-08-13', items: [{name:'Coffee', qty:8, price:40}], total: 320, type: 'cash' },
+        { id: 'S006', date: '2026-08-12', items: [{name:'Banana Cue', qty:10, price:25}], total: 250, type: 'cash' },
+        { id: 'S007', date: '2026-08-11', items: [{name:'Bottled Water', qty:12, price:20}], total: 240, type: 'cash' }
+      ]
+    };
+
+    function loadData() {
+      const saved = localStorage.getItem('kantinatab');
+      if (saved) {
+        data = JSON.parse(saved);
+      } else {
+        data = JSON.parse(JSON.stringify(defaultData));
+        data.cart = [];
+        saveData();
+      }
+      if (!data.cart) data.cart = [];
+    }
+
+    function saveData() {
+      localStorage.setItem('kantinatab', JSON.stringify(data));
+    }
+
+    // ==================== MODE & TABS ====================
+    function setMode(mode) {
+      document.getElementById('employee-view').classList.toggle('hidden', mode !== 'employee');
+      document.getElementById('admin-view').classList.toggle('hidden', mode !== 'admin');
+      document.getElementById('btn-employee').className = mode === 'employee' ? 'btn btn-primary text-sm' : 'btn btn-secondary text-sm';
+      document.getElementById('btn-admin').className = mode === 'admin' ? 'btn btn-primary text-sm' : 'btn btn-secondary text-sm';
+      if (mode === 'admin') {
+        showAdminTab('dashboard');
+        refreshAllAdmin();
+      }
+    }
+
+    function showAdminTab(tab) {
+      document.querySelectorAll('.admin-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.className = btn.dataset.tab === tab ? 'admin-tab btn btn-primary text-sm' : 'admin-tab btn btn-secondary text-sm';
+      });
+      if (tab === 'analytics') renderCharts();
+      if (tab === 'sales') renderSalesProducts();
+      if (tab === 'inventory') renderInventory();
+      if (tab === 'credit') renderCredit();
+      if (tab === 'dashboard') renderDashboard();
+    }
+
+    // ==================== EMPLOYEE LOOKUP ====================
+    function lookupEmployee() {
+      const id = document.getElementById('emp-lookup-id').value.trim().toUpperCase();
+      const emp = data.employees.find(e => e.id === id);
+      const result = document.getElementById('employee-result');
+      if (!emp) {
+        result.classList.add('hidden');
+        alert('Employee not found');
+        return;
+      }
+      result.classList.remove('hidden');
+      document.getElementById('emp-name').textContent = emp.name;
+      document.getElementById('emp-company').textContent = emp.company + ' • ' + emp.id;
+      document.getElementById('emp-balance').textContent = '₱' + emp.balance.toFixed(2);
+      document.getElementById('emp-limit').textContent = '₱' + emp.limit.toFixed(2);
+      document.getElementById('emp-available').textContent = '₱' + Math.max(0, emp.limit - emp.balance).toFixed(2);
+
+      const tbody = document.getElementById('emp-transactions');
+      tbody.innerHTML = '';
+      if (!emp.transactions || emp.transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-400 py-4">No transactions yet</td></tr>';
+      } else {
+        emp.transactions.slice().reverse().forEach(t => {
+          tbody.innerHTML += `<tr>
+            <td>${t.date}</td>
+            <td>${t.desc}</td>
+            <td class="text-right font-medium">₱${t.amount.toFixed(2)}</td>
+          </tr>`;
+        });
+      }
+    }
+
+    // ==================== DASHBOARD ====================
+    function renderDashboard() {
+      const today = new Date().toISOString().slice(0, 10);
+      const todaySales = data.sales.filter(s => s.date === today);
+      const todayRev = todaySales.reduce((sum, s) => sum + s.total, 0);
+      const outstanding = data.employees.reduce((sum, e) => sum + e.balance, 0);
+      const lowStock = data.products.filter(p => p.stock <= p.threshold);
+
+      document.getElementById('stat-today-revenue').textContent = '₱' + todayRev.toFixed(0);
+      document.getElementById('stat-outstanding').textContent = '₱' + outstanding.toFixed(0);
+      document.getElementById('stat-low-stock').textContent = lowStock.length;
+      document.getElementById('stat-employees').textContent = data.employees.length;
+
+      const list = document.getElementById('low-stock-list');
+      if (lowStock.length === 0) {
+        list.innerHTML = '<p class="text-gray-400">All items are well stocked.</p>';
+      } else {
+        list.innerHTML = lowStock.map(p =>
+          `<div class="flex justify-between items-center bg-amber-50 text-amber-800 px-3 py-2 rounded-lg">
+            <span>${p.name}</span>
+            <span class="font-semibold">${p.stock} left</span>
+          </div>`
+        ).join('');
+      }
+    }
+
+    // ==================== INVENTORY ====================
+    function renderInventory() {
+      const tbody = document.getElementById('inventory-table');
+      tbody.innerHTML = data.products.map(p => {
+        const status = p.stock <= p.threshold
+          ? '<span class="text-amber-600 font-medium">Low</span>'
+          : '<span class="text-emerald-600">OK</span>';
+        return `<tr>
+          <td class="font-medium">${p.name}</td>
+          <td>₱${p.price.toFixed(2)}</td>
+          <td>${p.stock}</td>
+          <td>${p.threshold}</td>
+          <td>${status}</td>
+          <td class="space-x-2">
+            <button onclick="openStockModal('${p.id}')" class="text-blue-600 hover:underline text-xs">Adjust</button>
+            <button onclick="editProduct('${p.id}')" class="text-gray-600 hover:underline text-xs">Edit</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openProductModal(id = null) {
+      document.getElementById('product-modal').classList.remove('hidden');
+      document.getElementById('product-modal').classList.add('flex');
+      if (id) {
+        const p = data.products.find(x => x.id === id);
+        document.getElementById('product-modal-title').textContent = 'Edit Product';
+        document.getElementById('product-id').value = p.id;
+        document.getElementById('product-name').value = p.name;
+        document.getElementById('product-price').value = p.price;
+        document.getElementById('product-stock').value = p.stock;
+        document.getElementById('product-threshold').value = p.threshold;
+      } else {
+        document.getElementById('product-modal-title').textContent = 'Add Product';
+        document.getElementById('product-id').value = '';
+        document.getElementById('product-name').value = '';
+        document.getElementById('product-price').value = '';
+        document.getElementById('product-stock').value = '';
+        document.getElementById('product-threshold').value = 10;
+      }
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.add('hidden');
+      document.getElementById('product-modal').classList.remove('flex');
+    }
+
+    function editProduct(id) { openProductModal(id); }
+
+    function saveProduct() {
+      const id = document.getElementById('product-id').value;
+      const name = document.getElementById('product-name').value.trim();
+      const price = parseFloat(document.getElementById('product-price').value);
+      const stock = parseInt(document.getElementById('product-stock').value);
+      const threshold = parseInt(document.getElementById('product-threshold').value);
+
+      if (!name || isNaN(price) || isNaN(stock)) {
+        alert('Please fill all fields correctly');
+        return;
+      }
+
+      if (id) {
+        const p = data.products.find(x => x.id === id);
+        p.name = name; p.price = price; p.stock = stock; p.threshold = threshold;
+      } else {
+        const newId = 'P' + String(data.products.length + 1).padStart(3, '0');
+        data.products.push({ id: newId, name, price, stock, threshold });
+      }
+      saveData();
+      closeProductModal();
+      renderInventory();
+      renderDashboard();
+    }
+
+    function openStockModal(id) {
+      const p = data.products.find(x => x.id === id);
+      document.getElementById('stock-product-id').value = id;
+      document.getElementById('stock-product-name').textContent = p.name + ' (current: ' + p.stock + ')';
+      document.getElementById('stock-qty').value = 1;
+      document.getElementById('stock-modal').classList.remove('hidden');
+      document.getElementById('stock-modal').classList.add('flex');
+    }
+
+    function closeStockModal() {
+      document.getElementById('stock-modal').classList.add('hidden');
+      document.getElementById('stock-modal').classList.remove('flex');
+    }
+
+    function adjustStock(dir) {
+      const id = document.getElementById('stock-product-id').value;
+      const qty = parseInt(document.getElementById('stock-qty').value) || 1;
+      const p = data.products.find(x => x.id === id);
+      p.stock = Math.max(0, p.stock + (dir * qty));
+      saveData();
+      closeStockModal();
+      renderInventory();
+      renderDashboard();
+    }
+
+    // ==================== SALES ====================
+    function renderSalesProducts() {
+      const list = document.getElementById('sales-product-list');
+      list.innerHTML = data.products.map(p => `
+        <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg">
+          <div>
+            <p class="font-medium text-sm">${p.name}</p>
+            <p class="text-xs text-gray-500">₱${p.price.toFixed(2)} • Stock: ${p.stock}</p>
+          </div>
+          <button onclick="addToCart('${p.id}')" class="btn btn-primary text-xs py-1 px-3" ${p.stock <= 0 ? 'disabled' : ''}>Add</button>
+        </div>
+      `).join('');
+
+      // Populate employee select
+      const sel = document.getElementById('sale-employee');
+      sel.innerHTML = data.employees.map(e =>
+        `<option value="${e.id}">${e.id} – ${e.name} (Avail: ₱${Math.max(0, e.limit - e.balance).toFixed(0)})</option>`
+      ).join('');
+
+      renderCart();
+    }
+
+    function addToCart(id) {
+      const p = data.products.find(x => x.id === id);
+      if (p.stock <= 0) return;
+      const existing = data.cart.find(c => c.id === id);
+      if (existing) {
+        if (existing.qty >= p.stock) return alert('Not enough stock');
+        existing.qty++;
+      } else {
+        data.cart.push({ id: p.id, name: p.name, price: p.price, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const el = document.getElementById('cart-items');
+      if (data.cart.length === 0) {
+        el.innerHTML = '<p class="text-gray-400 text-center py-4">Cart is empty</p>';
+      } else {
+        el.innerHTML = data.cart.map((c, i) => `
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="font-medium">${c.name}</p>
+              <p class="text-xs text-gray-500">₱${c.price} × ${c.qty}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium">₱${(c.price * c.qty).toFixed(2)}</span>
+              <button onclick="removeFromCart(${i})" class="text-red-500 text-xs">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      const total = data.cart.reduce((s, c) => s + c.price * c.qty, 0);
+      document.getElementById('cart-total').textContent = '₱' + total.toFixed(2);
+    }
+
+    function removeFromCart(i) {
+      data.cart.splice(i, 1);
+      renderCart();
+    }
+
+    function toggleEmployeeSelect() {
+      const type = document.getElementById('payment-type').value;
+      document.getElementById('employee-select-wrap').classList.toggle('hidden', type !== 'credit');
+    }
+
+    function completeSale() {
+      if (data.cart.length === 0) return alert('Cart is empty');
+
+      const type = document.getElementById('payment-type').value;
+      const total = data.cart.reduce((s, c) => s + c.price * c.qty, 0);
+
+      // Check stock
+      for (const c of data.cart) {
+        const p = data.products.find(x => x.id === c.id);
+        if (p.stock < c.qty) return alert(`Not enough stock for ${c.name}`);
+      }
+
+      if (type === 'credit') {
+        const empId = document.getElementById('sale-employee').value;
+        const emp = data.employees.find(e => e.id === empId);
+        if (emp.balance + total > emp.limit) {
+          return alert(`Credit limit exceeded. Available: ₱${(emp.limit - emp.balance).toFixed(2)}`);
+        }
+        emp.balance += total;
+        const desc = data.cart.map(c => `${c.qty}× ${c.name}`).join(', ');
+        emp.transactions.push({
+          date: new Date().toISOString().slice(0, 10),
+          desc,
+          amount: total
+        });
+      }
+
+      // Deduct inventory
+      data.cart.forEach(c => {
+        const p = data.products.find(x => x.id === c.id);
+        p.stock -= c.qty;
+      });
+
+      // Record sale
+      data.sales.push({
+        id: 'S' + String(data.sales.length + 1).padStart(3, '0'),
+        date: new Date().toISOString().slice(0, 10),
+        items: data.cart.map(c => ({ name: c.name, qty: c.qty, price: c.price })),
+        total,
+        type
+      });
+
+      data.cart = [];
+      saveData();
+      renderCart();
+      renderSalesProducts();
+      alert('Sale completed successfully!');
+      renderDashboard();
+    }
+
+    // ==================== CREDIT ====================
+    function renderCredit() {
+      const tbody = document.getElementById('credit-table');
+      tbody.innerHTML = data.employees.map(e => `
+        <tr>
+          <td class="font-mono text-xs">${e.id}</td>
+          <td class="font-medium">${e.name}</td>
+          <td>${e.company}</td>
+          <td class="${e.balance > 0 ? 'text-red-600 font-semibold' : ''}">₱${e.balance.toFixed(2)}</td>
+          <td>₱${e.limit.toFixed(2)}</td>
+          <td class="space-x-2">
+            <button onclick="settleEmployee('${e.id}')" class="text-emerald-600 hover:underline text-xs">Settle</button>
+            <button onclick="editEmployee('${e.id}')" class="text-blue-600 hover:underline text-xs">Edit</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEmployeeModal(id = null) {
+      document.getElementById('employee-modal').classList.remove('hidden');
+      document.getElementById('employee-modal').classList.add('flex');
+      if (id) {
+        const e = data.employees.find(x => x.id === id);
+        document.getElementById('emp-edit-id').value = e.id;
+        document.getElementById('emp-id').value = e.id;
+        document.getElementById('emp-id').disabled = true;
+        document.getElementById('emp-fullname').value = e.name;
+        document.getElementById('emp-company-input').value = e.company;
+        document.getElementById('emp-credit-limit').value = e.limit;
+      } else {
+        document.getElementById('emp-edit-id').value = '';
+        document.getElementById('emp-id').value = '';
+        document.getElementById('emp-id').disabled = false;
+        document.getElementById('emp-fullname').value = '';
+        document.getElementById('emp-company-input').value = '';
+        document.getElementById('emp-credit-limit').value = 500;
+      }
+    }
+
+    function closeEmployeeModal() {
+      document.getElementById('employee-modal').classList.add('hidden');
+      document.getElementById('employee-modal').classList.remove('flex');
+    }
+
+    function editEmployee(id) { openEmployeeModal(id); }
+
+    function saveEmployee() {
+      const editId = document.getElementById('emp-edit-id').value;
+      const id = document.getElementById('emp-id').value.trim().toUpperCase();
+      const name = document.getElementById('emp-fullname').value.trim();
+      const company = document.getElementById('emp-company-input').value.trim();
+      const limit = parseFloat(document.getElementById('emp-credit-limit').value);
+
+      if (!id || !name || !company || isNaN(limit)) {
+        alert('Please fill all fields');
+        return;
+      }
+
+      if (editId) {
+        const e = data.employees.find(x => x.id === editId);
+        e.name = name;
+        e.company = company;
+        e.limit = limit;
+      } else {
+        if (data.employees.find(e => e.id === id)) {
+          alert('Employee ID already exists');
+          return;
+        }
+        data.employees.push({ id, name, company, limit, balance: 0, transactions: [] });
+      }
+      saveData();
+      closeEmployeeModal();
+      renderCredit();
+      renderDashboard();
+    }
+
+    function settleEmployee(id) {
+      const emp = data.employees.find(e => e.id === id);
+      if (emp.balance === 0) return alert('Balance is already zero');
+      if (confirm(`Settle ₱${emp.balance.toFixed(2)} for ${emp.name}? This will reset their balance to 0.`)) {
+        emp.transactions.push({
+          date: new Date().toISOString().slice(0, 10),
+          desc: 'Settlement / Payment',
+          amount: -emp.balance
+        });
+        emp.balance = 0;
+        saveData();
+        renderCredit();
+        renderDashboard();
+      }
+    }
+
+    function generateStatements() {
+      const area = document.getElementById('statements-area');
+      const content = document.getElementById('statements-content');
+      area.classList.remove('hidden');
+
+      const companies = {};
+      data.employees.forEach(e => {
+        if (!companies[e.company]) companies[e.company] = [];
+        companies[e.company].push(e);
+      });
+
+      let html = '';
+      for (const [company, emps] of Object.entries(companies)) {
+        const total = emps.reduce((s, e) => s + e.balance, 0);
+        html += `<div class="mb-6 border rounded-lg p-4">
+          <h4 class="font-bold text-lg mb-2">${company}</h4>
+          <p class="text-sm text-gray-500 mb-3">Total Outstanding: <span class="font-semibold text-red-600">₱${total.toFixed(2)}</span></p>
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-gray-500"><th class="pb-2">Employee</th><th class="pb-2">ID</th><th class="pb-2 text-right">Balance</th></tr></thead>
+            <tbody>
+              ${emps.map(e => `<tr class="border-t"><td class="py-1.5">${e.name}</td><td>${e.id}</td><td class="text-right">₱${e.balance.toFixed(2)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      }
+      content.innerHTML = html || '<p class="text-gray-400">No data</p>';
+    }
+
+    // ==================== ANALYTICS ====================
+    let charts = {};
+
+    function renderCharts() {
+      // Best sellers
+      const productSales = {};
+      data.sales.forEach(s => {
+        s.items.forEach(i => {
+          productSales[i.name] = (productSales[i.name] || 0) + i.qty;
+        });
+      });
+      const sorted = Object.entries(productSales).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+      if (charts.bestsellers) charts.bestsellers.destroy();
+      charts.bestsellers = new Chart(document.getElementById('chart-bestsellers'), {
+        type: 'bar',
+        data: {
+          labels: sorted.map(x => x[0]),
+          datasets: [{ label: 'Units Sold', data: sorted.map(x => x[1]), backgroundColor: '#3b82f6' }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+
+      // Revenue trend (last 7 days)
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().slice(0, 10));
+      }
+      const revenue = days.map(day => data.sales.filter(s => s.date === day).reduce((sum, s) => sum + s.total, 0));
+
+      if (charts.revenue) charts.revenue.destroy();
+      charts.revenue = new Chart(document.getElementById('chart-revenue'), {
+        type: 'line',
+        data: {
+          labels: days.map(d => d.slice(5)),
+          datasets: [{ label: 'Revenue (₱)', data: revenue, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+
+      // Outstanding by company
+      const byCompany = {};
+      data.employees.forEach(e => {
+        byCompany[e.company] = (byCompany[e.company] || 0) + e.balance;
+      });
+
+      if (charts.credit) charts.credit.destroy();
+      charts.credit = new Chart(document.getElementById('chart-credit'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(byCompany),
+          datasets: [{ data: Object.values(byCompany), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] }]
+        },
+        options: { responsive: true }
+      });
+    }
+
+    function refreshAllAdmin() {
+      renderDashboard();
+      renderInventory();
+      renderCredit();
+    }
+
+    // ==================== INIT ====================
+    loadData();
+    setMode('admin'); // start on admin
+  </script>
+</body>
+</html>
