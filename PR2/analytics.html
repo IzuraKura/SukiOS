@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics - Microbusiness Tracker</title>
+    <title>Analytics | KitaKita</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
     <div class="app-container">
-        
-        <!-- Collapsible Sidebar -->
+        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="brand">
-                <h2>Suki<span>OS</span></h2>
+                <h2>Kita<span>Kita</span></h2>
                 <button id="sidebar-toggle" class="btn-icon" aria-label="Toggle Sidebar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
@@ -32,97 +29,100 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                     <span class="link-text">POS Kiosk</span>
                 </a>
+                <a href="accounts.html" class="nav-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span class="link-text">Accounts</span>
+                </a>
                 <a href="analytics.html" class="nav-link active">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                     <span class="link-text">Analytics</span>
                 </a>
             </nav>
-            <div class="theme-control">
-                <button id="theme-toggle" class="btn-secondary">Theme Switch</button>
-            </div>
         </aside>
 
-        <!-- Main Content Area -->
+        <!-- Main Content -->
         <main class="main-content">
-            
             <header class="page-header">
                 <div>
-                    <h1 class="page-title">Market & Financial Analytics</h1>
-                    <p class="text-muted">Simulate profit margins and analyze growth projections.</p>
-                </div>
-                <div class="quick-actions">
-                    <button class="btn-primary" onclick="window.print()">Export Report</button>
+                    <h1 class="page-title">Analytics & Forecasting</h1>
+                    <p class="text-muted">Track canteen performance, visual sales breakdown, and projection simulations.</p>
                 </div>
             </header>
 
-            <!-- Grid Layout for Analytics Features -->
-            <section class="analytics-grid">
-                
-                <!-- "What-If" Profit & Price Simulator Card -->
-                <div class="card simulator-card">
-                    <div class="card-header">
-                        <h3>"What-If" Margin Simulator</h3>
-                        <span class="badge badge-neutral">Interactive</span>
-                    </div>
-                    <p class="text-muted mb-16">Adjust sliders to simulate changes in average product pricing or material supply costs.</p>
-
-                    <div class="simulator-controls">
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Simulated Price Adjustment</span>
-                                <strong id="price-adj-val">+0%</strong>
-                            </div>
-                            <input type="range" id="price-slider" min="-30" max="50" value="0" step="5">
-                        </div>
-
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Simulated Material Cost Change</span>
-                                <strong id="cost-adj-val">+0%</strong>
-                            </div>
-                            <input type="range" id="cost-slider" min="-30" max="50" value="0" step="5">
-                        </div>
-                    </div>
-
-                    <div class="simulator-output">
-                        <div class="sim-metric">
-                            <span class="text-muted">Projected Monthly Revenue</span>
-                            <h3 id="sim-revenue">₱0.00</h3>
-                        </div>
-                        <div class="sim-metric">
-                            <span class="text-muted">Projected Net Profit</span>
-                            <h3 id="sim-profit" class="text-success">₱0.00</h3>
-                        </div>
-                    </div>
+            <!-- Metrics Overview Cards -->
+            <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <div class="card" style="padding: 20px;">
+                    <span class="text-muted" style="font-size: 0.85rem;">Total Revenue</span>
+                    <h2 class="text-accent" id="stat-revenue" style="margin-top: 8px;">₱0.00</h2>
                 </div>
-
-                <!-- Product Category Performance Breakdown -->
-                <div class="card chart-card">
-                    <div class="card-header">
-                        <h3>Sales Breakdown by Category</h3>
-                        <span class="text-muted">Volume Share</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="categoryChart"></canvas>
-                    </div>
+                <div class="card" style="padding: 20px;">
+                    <span class="text-muted" style="font-size: 0.85rem;">Net Profit</span>
+                    <h2 class="text-success" id="stat-profit" style="margin-top: 8px;">₱0.00</h2>
                 </div>
-
-            </section>
-
-            <!-- Bottom Row: Monthly Revenue Projection Chart -->
-            <section class="card chart-card mt-24">
-                <div class="card-header">
-                    <h3>Projected Financial Trajectory</h3>
-                    <span class="text-muted">Based on simulated inputs</span>
+                <div class="card" style="padding: 20px;">
+                    <span class="text-muted" style="font-size: 0.85rem;">Total Outstanding Utang</span>
+                    <h2 class="text-danger" id="stat-collectibles" style="margin-top: 8px;">₱0.00</h2>
                 </div>
-                <div class="chart-container">
-                    <canvas id="projectionChart"></canvas>
+                <div class="card" style="padding: 20px;">
+                    <span class="text-muted" style="font-size: 0.85rem;">Total Transactions</span>
+                    <h2 id="stat-orders" style="margin-top: 8px;">0</h2>
                 </div>
             </section>
 
+            <!-- Grid Layout for Aura Visuals & What-If Simulator -->
+            <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                <!-- Visual Sales Distribution Chart -->
+                <div class="card" style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Revenue Breakdown</h3>
+                        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 16px;">Proportion of cash sales vs active credit tabs.</p>
+                    </div>
+                    <div id="aura-chart-container" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Dynamically populated visual progress bars -->
+                    </div>
+                </div>
+
+                <!-- What-If Simulator Card -->
+                <div class="card" style="padding: 20px;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 4px;">What-If Simulator</h3>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 16px;">Simulate revenue changes based on volume.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <label class="text-muted" style="font-size: 0.8rem; display: block; margin-bottom: 4px;" id="slider-label">Extra Daily Customers: +10</label>
+                            <input type="range" id="sim-slider" min="0" max="100" value="10" style="width: 100%; accent-color: var(--accent);">
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+                            <span class="text-muted" style="font-size: 0.8rem; display: block;">Projected Monthly Revenue Boost:</span>
+                            <h3 class="text-success" id="sim-output" style="margin-top: 4px;">₱0.00</h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sales History Table -->
+            <section class="card table-container">
+                <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.1rem;">Transaction History</h3>
+                    <button class="btn-secondary" id="clear-sales-btn" style="padding: 6px 12px; font-size: 0.8rem; color: var(--text-danger);">Clear Sales Log</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date / Time</th>
+                            <th>Items Purchased</th>
+                            <th>Total Amount</th>
+                            <th>Payment Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-table-body">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </section>
         </main>
     </div>
 
-    <script src="script.js"></script>
+    <script src="analytics.js"></script>
 </body>
 </html>
